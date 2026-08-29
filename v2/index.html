@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id" manifest="cache.appcache">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DAENG PATCH | PS4 Exploit Host</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --r:rgba(255,30,60,1);
+  --r1:rgba(255,30,60,.7);
+  --r2:rgba(255,30,60,.15);
+  --r3:rgba(255,30,60,.05);
+  --rg:rgba(255,80,80,.4);
+  --rd:#ff1e3c;
+  --dark:#080608;
+  --text:rgba(255,220,220,.92);
+  --dim:rgba(255,80,80,.45);
+  --mono:'Share Tech Mono',monospace;
+  --orb:'Orbitron',sans-serif;
+}
+
+html,body{height:100%;background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden}
+
+/* noise texture */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  opacity:.6;z-index:0;
+}
+
+/* diagonal grid */
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(60deg,rgba(255,30,60,.04) 0,rgba(255,30,60,.04) 1px,transparent 1px,transparent 40px),
+    repeating-linear-gradient(-60deg,rgba(255,30,60,.03) 0,rgba(255,30,60,.03) 1px,transparent 1px,transparent 40px);
+}
+
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.13) 0,rgba(0,0,0,.13) 1px,transparent 1px,transparent 3px)}
+
+/* vignette */
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,transparent 40%,rgba(4,0,4,.7) 100%)}
+
+/* glow center */
+.glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 50% 45% at 50% 52%,rgba(255,20,50,.07) 0%,transparent 65%)}
+
+/* side data strips */
+.strip{position:fixed;top:0;bottom:0;width:130px;overflow:hidden;opacity:.055;
+  color:var(--rd);font:11px/1.1 var(--mono);word-break:break-all;pointer-events:none;z-index:0;padding:20px 8px}
+.strip.l{left:0}.strip.r{right:0;text-align:right}
+
+/* ── shell ── */
+#shell{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;padding:22px 26px}
+
+/* ── top bar ── */
+#topbar{display:flex;align-items:center;gap:0;border-bottom:1px solid rgba(255,30,60,.2);padding-bottom:16px;margin-bottom:0}
+
+.logo-wrap{display:flex;align-items:center;gap:12px}
+.logo-hex{
+  width:44px;height:44px;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background:rgba(255,30,60,.12);border:1px solid rgba(255,30,60,.5);
+  box-shadow:0 0 20px rgba(255,30,60,.3),inset 0 0 12px rgba(255,30,60,.08);
+}
+.logo-hex img{width:26px;height:26px;border-radius:2px;opacity:.9}
+
+.brand-block{}
+.brand-title{
+  display:block;font:900 22px/1 var(--orb);
+  letter-spacing:.12em;color:#fff;
+  text-shadow:0 0 15px rgba(255,30,60,.8),0 0 30px rgba(255,30,60,.3);
+  position:relative;
+}
+.brand-title .glitch-wrap{position:relative;display:inline-block}
+.brand-title .glitch-wrap::before,
+.brand-title .glitch-wrap::after{
+  content:attr(data-t);position:absolute;left:0;top:0;opacity:0;
+}
+.brand-title .glitch-wrap::before{color:#ff6b6b;animation:glitch 4s infinite}
+.brand-title .glitch-wrap::after{color:#ff0033;animation:glitch 4s .2s infinite reverse}
+
+.brand-sub{
+  display:block;margin-top:4px;font:11px/1 var(--mono);
+  letter-spacing:.08em;color:var(--dim);
+}
+.brand-sub span{color:rgba(255,80,80,.65)}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px;border:1px solid rgba(255,30,60,.3);
+  background:rgba(255,30,60,.06);
+  font:10px var(--mono);letter-spacing:.1em;color:rgba(255,120,120,.7);
+}
+.status-pill::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--rd);box-shadow:0 0 6px var(--rd);
+  animation:pulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+
+.fw-tags{display:flex;gap:5px;flex-wrap:wrap}
+.fw-tag{
+  padding:3px 7px;border:1px solid rgba(255,30,60,.22);
+  background:rgba(255,30,60,.05);
+  font:9px var(--mono);color:rgba(255,100,100,.55);letter-spacing:.06em;
+}
+
+/* ── center ── */
+#center{flex:1;display:flex;align-items:center;justify-content:center;padding:20px 0}
+
+/* ── main panel ── */
+#panel{
+  position:relative;width:100%;max-width:660px;
+  padding:0;overflow:hidden;
+}
+
+/* outer glow frame */
+.panel-frame{
+  position:relative;padding:2px;
+  background:linear-gradient(135deg,rgba(255,30,60,.5),rgba(255,0,30,.1) 40%,rgba(255,30,60,.4));
+  box-shadow:0 0 50px rgba(255,30,60,.12),0 0 100px rgba(255,30,60,.05);
+}
+
+.panel-inner{
+  background:linear-gradient(160deg,rgba(20,4,8,.97) 0%,rgba(10,2,6,.99) 100%);
+  padding:28px 30px;position:relative;overflow:hidden;
+}
+
+/* moving scanline inside panel */
+.panel-scan{
+  position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(to right,transparent 0%,rgba(255,30,60,.6) 30%,rgba(255,80,80,.9) 50%,rgba(255,30,60,.6) 70%,transparent 100%);
+  filter:blur(.5px);animation:scan 3s linear infinite;pointer-events:none;z-index:1;
+}
+
+/* top data row inside panel */
+.panel-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.p-eyebrow{font:10px var(--mono);letter-spacing:.2em;color:rgba(255,30,60,.5)}
+.p-eyebrow::before{content:"// ";color:rgba(255,80,80,.4)}
+.p-id{font:9px var(--mono);color:rgba(255,30,60,.3);letter-spacing:.08em}
+
+/* red divider line */
+.divider{width:100%;height:1px;background:linear-gradient(to right,transparent,rgba(255,30,60,.4),transparent);margin:14px 0}
+
+/* main state */
+#state{
+  font:700 26px/1.15 var(--orb);letter-spacing:.05em;text-transform:uppercase;
+  color:#fff;text-shadow:0 0 20px rgba(255,30,60,.5);margin-bottom:12px;
+}
+#state.ok  {color:#ff6666;text-shadow:0 0 18px rgba(255,60,60,.6)}
+#state.bad {color:#ff2244;text-shadow:0 0 18px rgba(255,0,40,.7)}
+#state.warn{color:#ff8844;text-shadow:0 0 18px rgba(255,120,40,.5)}
+
+/* detail block */
+#det{
+  padding:11px 14px;
+  border-left:2px solid rgba(255,30,60,.35);
+  background:rgba(255,30,60,.04);
+  font:300 12px/1.8 'Inter',sans-serif;color:rgba(255,190,190,.6);
+}
+#det b{color:rgba(255,200,200,.92);font-weight:600}
+
+/* status line */
+#cache{
+  margin-top:14px;padding-top:12px;
+  border-top:1px solid rgba(255,30,60,.1);
+  font:12px var(--mono);color:rgba(255,30,60,.35);min-height:16px;
+  letter-spacing:.05em;
+}
+#cache::before{content:"◈ STATUS  ";color:rgba(255,60,60,.5)}
+#cache.cacheok{color:rgba(255,100,100,.65)}
+
+/* bottom stat bar */
+.panel-stats{
+  display:flex;gap:0;margin-top:20px;
+  border:1px solid rgba(255,30,60,.15);
+  background:rgba(255,30,60,.03);
+}
+.stat-item{
+  flex:1;padding:8px 12px;text-align:center;
+  border-right:1px solid rgba(255,30,60,.12);
+}
+.stat-item:last-child{border-right:none}
+.stat-val{display:block;font:600 13px var(--mono);color:rgba(255,80,80,.75);letter-spacing:.06em}
+.stat-lbl{display:block;font:9px var(--mono);color:rgba(255,30,60,.3);letter-spacing:.1em;margin-top:2px}
+
+/* ── footer ── */
+#footer{
+  display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;
+  padding-top:14px;border-top:1px solid rgba(255,30,60,.12);
+  font:9px var(--mono);color:rgba(255,30,60,.25);letter-spacing:.08em;
+}
+#footer b{color:rgba(255,60,60,.4);font-weight:400}
+
+/* ── keyframes ── */
+@keyframes glitch{
+  0%,85%,100%{transform:translateX(0);opacity:0}
+  87%{transform:translateX(-4px) scaleX(1.01);opacity:.7}
+  90%{transform:translateX(3px);opacity:.4}
+  93%{transform:translateX(-2px);opacity:.6}
+  96%{transform:translateX(1px);opacity:.2}
+}
+@keyframes scan{0%{top:-1%}100%{top:101%}}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 6px var(--rd)}50%{opacity:.3;box-shadow:0 0 2px var(--rd)}}
+
+@media(max-width:560px){
+  #shell{padding:14px}
+  #state{font-size:18px}
+  .topbar-right,.fw-tags,.strip{display:none}
+  .panel-inner{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="glow-bg"></div>
+<div class="strip l">01001000 01000001 01000011 01001011<br>ROOT ACCESS<br>10101100 01010011<br>PAYLOAD READY<br>01101010 11010010<br>DAENG PATCH<br>ONLINE 13.00<br>01010010 00110101<br>WEBKIT CORE<br>10101001 01001011</div>
+<div class="strip r">DAENG // NODE<br>10011010 00101011<br>EXPLOIT HOST<br>01010101 11001001<br>PS4 WEBKIT CORE<br>10100110 01010110<br>FW 11.00 // 13.00<br>10110001 00110010<br>SECURE CHAIN<br>01001000 10110010</div>
+
+<main id="shell">
+  <header id="topbar">
+    <div class="logo-wrap">
+      <div class="logo-hex">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="13" cy="13" r="11" stroke="rgba(255,80,80,0.8)" stroke-width="1.5" fill="none"/>
+          <path d="M8 17V9.5L12.5 9c1.8 0 3.2.8 3.2 2.5s-1.4 2.6-3.2 2.6H11V17H8z" fill="rgba(255,80,80,0.85)"/>
+          <path d="M15.5 14l3 3" stroke="rgba(255,80,80,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="13" cy="13" r="1.5" fill="rgba(255,30,60,0.5)"/>
+        </svg>
+      </div>
+      <div class="brand-block">
+        <span class="brand-title"><span class="glitch-wrap" data-t="DAENG PATCH">DAENG PATCH</span></span>
+        <span class="brand-sub"><span>PS4 EXPLOIT HOST</span> · FIRMWARE DETECTION ACTIVE</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="fw-tags">
+        <span class="fw-tag">11.00</span>
+        <span class="fw-tag">11.50</span>
+        <span class="fw-tag">12.00</span>
+        <span class="fw-tag">12.02</span>
+        <span class="fw-tag">12.50</span>
+        <span class="fw-tag">12.52</span>
+        <span class="fw-tag">13.00</span>
+      </div>
+      <div class="status-pill">ROOT / ACTIVE</div>
+    </div>
+  </header>
+
+  <div id="center">
+    <div id="panel">
+      <div class="panel-frame">
+        <div class="panel-inner">
+          <div class="panel-scan"></div>
+
+          <div class="panel-header">
+            <div class="p-eyebrow">DAENG SECURITY CONSOLE</div>
+            <div class="p-id">NODE_041 // SYS_ACTIVE</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <section aria-live="polite">
+            <div id="state">Mendeteksi firmware...</div>
+            <div id="det"></div>
+            <div id="cache"></div>
+          </section>
+
+          <div class="panel-stats">
+            <div class="stat-item"><span class="stat-val">WEBKIT</span><span class="stat-lbl">ENGINE</span></div>
+            <div class="stat-item"><span class="stat-val">7</span><span class="stat-lbl">FW SUPPORT</span></div>
+            <div class="stat-item"><span class="stat-val">LAPSE</span><span class="stat-lbl">BUG A</span></div>
+            <div class="stat-item"><span class="stat-val">POOPS</span><span class="stat-lbl">BUG B</span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer">
+    <span><b>[KONTAK]</b> 087-777-747-477</span>
+    <span><b>[COPYRIGHT]</b> © 2026 DAENG 17PlayBox</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  var stateEl=document.getElementById("state");
+  var detEl=document.getElementById("det");
+  var cacheEl=document.getElementById("cache");
+  function setState(t,c){stateEl.textContent=t;stateEl.className=c||""}
+  function setCache(t,ok){cacheEl.textContent=t;cacheEl.className=ok?"cacheok":""}
+  var params=new URLSearchParams(location.search);
+  var key=null,fwnum=null;
+  var m=/PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
+  if(m){
+    var minor=parseInt(m[2],16);
+    var ms=minor.toString(16);
+    if(ms.length<2)ms="0"+ms;
+    key=m[1]+"."+ms;
+    fwnum=parseInt(m[1],10)*100+parseInt(ms,10);
+  }
+  var bug=null,why="";
+  var forced=params.get("bug");
+  if(forced==="lapse"||forced==="poops"){
+    bug=forced;why="dipilih melalui ?bug="+forced;
+  } else if(!key){
+    why="";
+  } else if(fwnum<=1202){
+    bug="lapse";why=key+" ≤ 12.02";
+  } else if(fwnum>=1250){
+    bug="poops";why=key+" ≥ 12.50";
+  } else {
+    why=key+" — tidak ada eksploit yang cocok (lapse hingga 12.02, poops mulai 12.50)";
+  }
+  detEl.innerHTML="Firmware: <b>"+(key||"tidak dapat dideteksi")+"</b>"
+    +" &middot; Metode: <b>"+(bug||"sistem tidak kompatibel")+"</b> &middot; "+why;
+  if(!bug){setState("Firmware tidak kompatibel","bad");return;}
+  var target=(bug==="lapse"?"run_lapse.html":"run_poops.html")+location.search;
+  var startQueued=false;
+  function go(){
+    if(startQueued)return;
+    startQueued=true;
+    setCache("Cache siap — memulai chain secara otomatis",true);
+    setState("Memuat rangkaian "+bug+"...","warn");
+    location.replace(target);
+  }
+  function waitForTap(msg,action){
+    setState(msg+" — memulai otomatis","warn");
+    window.setTimeout(action,0);
+  }
+  var ac=window.applicationCache;
+  if(!ac||!document.documentElement.hasAttribute("manifest")){
+    go();
+  } else if(!navigator.onLine){
+    setCache("Mode luring — dimuat dari cache",true);go();
+  } else if(ac.status===ac.IDLE){
+    setCache("Cache siap digunakan",true);go();
+  } else if(ac.status===ac.UPDATEREADY){
+    try{ac.swapCache()}catch(e){}
+    setCache("Pembaruan telah diunduh",true);
+    waitForTap("PEMBARUAN SIAP — memuat ulang & menjalankan",function(){location.reload()});
+  } else {
+    setCache("Memeriksa cache...");
+    ac.addEventListener("downloading",function(){setCache("Menyimpan cache untuk mode luring (pertama kali)...")},false);
+    ac.addEventListener("progress",function(e){if(e&&e.total)setCache("Menyimpan cache "+Math.round((e.loaded/e.total)*100)+"%")},false);
+    ac.addEventListener("cached",function(){setCache("Cache luring siap digunakan",true);waitForTap("CACHE SIAP (pertama kali) — menjalankan",go)},false);
+    ac.addEventListener("updateready",function(){try{ac.swapCache()}catch(e){}setCache("Pembaruan telah diunduh",true);waitForTap("PEMBARUAN SIAP — memuat ulang & menjalankan",function(){location.reload()})},false);
+    ac.addEventListener("noupdate",function(){setCache("Cache siap — mode luring tersedia",true);go()},false);
+    ac.addEventListener("error",function(){setCache("Cache tidak tersedia");waitForTap("CACHE GAGAL — tetap menjalankan",go)},false);
+    ac.addEventListener("obsolete",function(){setCache("Cache kedaluwarsa");waitForTap("CACHE KEDALUWARSA — menjalankan",go)},false);
+  }
+})();
+</script>
+</body>
+</html>

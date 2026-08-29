@@ -1,0 +1,498 @@
+/* ============================================
+   ARSAENS PATCH — RED SIGNAL DECK THEME
+   ============================================ */
+
+:root {
+    --void: #060404;
+    --panel: #0d0707;
+    --panel-raised: #130909;
+    --line: #2a1010;
+    --red: #ff1435;
+    --red-dim: #7a0d1f;
+    --red-glow: rgba(255, 20, 53, 0.45);
+    --cyan-ghost: #00e5ff;
+    --magenta-ghost: #ff2fd0;
+    --ink: #d8c9c9;
+    --ink-dim: #6b5555;
+    --amber: #ffb000;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    background: var(--void);
+    color: var(--ink);
+    margin: 0;
+    padding: 20px 20px 0;
+    font-family: 'JetBrains Mono', 'Courier New', 'Consolas', monospace;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- Grid + vignette backdrop --- */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 20, 53, 0.10), transparent 55%),
+        linear-gradient(rgba(255, 20, 53, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 20, 53, 0.05) 1px, transparent 1px);
+    background-size: 100% 100%, 42px 42px, 42px 42px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* --- CRT scanlines --- */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 20, 53, 0.025) 2px,
+        rgba(255, 20, 53, 0.025) 4px
+    );
+    mix-blend-mode: screen;
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* --- Corner HUD frame --- */
+.hud-frame { position: fixed; inset: 10px; z-index: 2; pointer-events: none; border: 1px solid rgba(255, 20, 53, 0.15); }
+.hud-frame::before, .hud-frame::after {
+    content: "";
+    position: absolute;
+    width: 22px; height: 22px;
+    border: 2px solid var(--red);
+    filter: drop-shadow(0 0 6px var(--red-glow));
+}
+.hud-frame::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+.hud-frame::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+/* ============================================
+   TOPBAR
+   ============================================ */
+.topbar {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 4px 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--red);
+    color: var(--red);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 14px var(--red-glow), inset 0 0 8px rgba(255, 20, 53, 0.15);
+    clip-path: polygon(20% 0, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%);
+}
+
+/* --- Hologram wordmark --- */
+.hologram-wordmark {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    overflow: hidden;
+}
+
+.hologram-wordmark span[data-text] {
+    position: relative;
+    display: inline-block;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+    text-shadow: 0 0 6px var(--red-glow), 0 0 16px var(--red-glow);
+    animation: flicker 4s infinite;
+}
+
+.hologram-wordmark span[data-text]::before,
+.hologram-wordmark span[data-text]::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    opacity: 0;
+    filter: blur(0.5px);
+}
+.hologram-wordmark span[data-text]::before {
+    color: var(--cyan-ghost);
+    animation: glitchBefore 3.2s infinite;
+    clip-path: inset(0 0 55% 0);
+}
+.hologram-wordmark span[data-text]::after {
+    color: var(--magenta-ghost);
+    animation: glitchAfter 3.2s infinite;
+    clip-path: inset(55% 0 0 0);
+}
+
+.hologram-wordmark .scan-line {
+    position: absolute;
+    left: 0; width: 100%; height: 2px;
+    background: linear-gradient(to right, transparent, var(--red), transparent);
+    filter: blur(1px) drop-shadow(0 0 6px var(--red));
+    top: 0;
+    animation: scan 2.4s linear infinite;
+}
+
+@keyframes flicker {
+    0%, 92%, 100% { opacity: 1; }
+    93% { opacity: 0.55; }
+    94% { opacity: 1; }
+    95% { opacity: 0.35; }
+    96% { opacity: 1; }
+}
+@keyframes glitchBefore {
+    0%, 88%, 100% { opacity: 0; transform: translateX(0); }
+    90% { opacity: 0.7; transform: translateX(-3px); }
+    92% { opacity: 0; }
+}
+@keyframes glitchAfter {
+    0%, 88%, 100% { opacity: 0; transform: translateX(0); }
+    90% { opacity: 0.6; transform: translateX(3px); }
+    92% { opacity: 0; }
+}
+@keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+.topbar-meta {
+    display: flex;
+    gap: 22px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+.meta-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+}
+.meta-value {
+    font-size: 13px;
+    color: var(--cyan-ghost);
+    text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   TICKER
+   ============================================ */
+.ticker {
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+    white-space: nowrap;
+}
+.ticker-track {
+    display: inline-block;
+    padding: 6px 0;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--red-dim);
+    animation: ticker 22s linear infinite;
+}
+@keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* ============================================
+   MAIN / CONTROL DECK
+   ============================================ */
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px 4px 0;
+}
+
+.control-deck {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+}
+
+.deck-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid rgba(255, 20, 53, 0.18);
+    padding: 8px 14px;
+    border-radius: 3px;
+}
+
+.deck-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+}
+
+#kernel-options {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+input[type="radio"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px; height: 12px;
+    border: 2px solid #4a2a2a;
+    border-radius: 50%;
+    background-color: #111;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+input[type="radio"]:checked {
+    border-color: var(--red);
+    background-color: var(--red);
+    box-shadow: 0 0 8px var(--red-glow);
+}
+
+#kernel-options label {
+    color: #a08080;
+    font-size: 12px;
+    margin-right: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+#kernel-options label:hover { color: var(--red); text-shadow: 0 0 6px var(--red-glow); }
+
+/* --- Primary Button --- */
+button { background: none; border: none; color: var(--red); padding: 0; cursor: pointer; font-family: inherit; text-transform: uppercase; }
+
+.btn-primary {
+    position: relative;
+    padding: 11px 30px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    border: 2px solid var(--red);
+    background: rgba(255, 20, 53, 0.08);
+    box-shadow: 0 0 15px var(--red-glow), inset 0 0 10px rgba(255, 20, 53, 0.08);
+    text-shadow: 0 0 6px var(--red-glow);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.btn-primary span { position: relative; z-index: 1; }
+.btn-primary::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 20, 53, 0.25), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary:hover { background: rgba(255, 20, 53, 0.15); box-shadow: 0 0 25px var(--red-glow), 0 0 45px rgba(255, 20, 53, 0.15); }
+.btn-primary:disabled { border-color: #3a2222; color: #5a3a3a; background: transparent; box-shadow: none; text-shadow: none; cursor: not-allowed; }
+.btn-primary:disabled::before { display: none; }
+
+/* --- Auto Jailbreak Toggle --- */
+.autoJb { display: flex; align-items: center; gap: 8px; }
+#autoJbLabel { color: #a08080; font-size: 11px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; }
+#autoJbLabel:hover { color: var(--red); text-shadow: 0 0 6px var(--red-glow); }
+
+#autoJbInput {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 34px; height: 17px;
+    background: #1a1010;
+    border: 1px solid #4a2a2a;
+    border-radius: 9px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s;
+}
+#autoJbInput::before {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 11px; height: 11px;
+    background: #5a3a3a;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+#autoJbInput:checked { background: rgba(255, 20, 53, 0.15); border-color: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+#autoJbInput:checked::before { left: 19px; background: var(--red); box-shadow: 0 0 6px var(--red-glow); }
+
+/* --- Status pills inside deck --- */
+.status-pills { gap: 16px; }
+.status-item { display: flex; align-items: center; gap: 6px; }
+.status-item .label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-dim); }
+.status-item .value {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--cyan-ghost);
+    text-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+.status-item .value[data-state="success"] { color: var(--red); text-shadow: 0 0 8px var(--red-glow); }
+.status-item .value[data-state="warn"] { color: var(--amber); text-shadow: 0 0 6px rgba(255, 176, 0, 0.4); animation: blink 1s step-end infinite; }
+.status-item .value[data-state="error"] { color: #ff0033; text-shadow: 0 0 8px rgba(255, 0, 51, 0.5); }
+.status-item .value[data-state="idle"] { color: var(--ink-dim); text-shadow: none; }
+
+/* --- Running-on line --- */
+h3 {
+    color: var(--ink-dim);
+    font-size: 11px;
+    font-weight: normal;
+    margin: 4px 4px 16px;
+    letter-spacing: 1px;
+    text-align: left;
+}
+#ua-value { color: var(--cyan-ghost); }
+
+/* ============================================
+   TERMINAL PANEL (full width, image removed)
+   ============================================ */
+.terminal-panel { width: 100%; }
+
+#console {
+    width: 100%;
+    background: #050202;
+    color: var(--red);
+    font-size: 13px;
+    padding: 0;
+    text-align: left;
+    height: 420px;
+    overflow-y: scroll;
+    word-wrap: break-word;
+    border: 1px solid rgba(255, 20, 53, 0.25);
+    border-radius: 3px;
+    line-height: 1.5;
+    position: relative;
+    margin: 0;
+    box-shadow: 0 0 12px rgba(255, 20, 53, 0.08), inset 0 0 24px rgba(0, 0, 0, 0.85);
+}
+
+#console::before {
+    content: "▼ TERMINAL — v4.0.1 [ARSAENS PATCH]";
+    display: block;
+    background: #150808;
+    color: var(--red);
+    font-size: 10px;
+    padding: 6px 14px;
+    border-bottom: 1px solid rgba(255, 20, 53, 0.25);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    text-shadow: 0 0 4px var(--red-glow);
+}
+
+#console-content { padding: 14px 16px; min-height: 360px; }
+
+#console::-webkit-scrollbar { width: 6px; }
+#console::-webkit-scrollbar-track { background: #0a0505; }
+#console::-webkit-scrollbar-thumb { background: var(--red-dim); border-radius: 3px; }
+#console::-webkit-scrollbar-thumb:hover { background: var(--red); }
+
+.cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--red);
+    animation: blink 1s step-end infinite;
+    vertical-align: text-bottom;
+    margin-left: 2px;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.progress-bar-container { width: 100%; height: 3px; background: #150808; margin: 8px 0; border-radius: 2px; overflow: hidden; }
+.progress-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--red), var(--cyan-ghost), var(--red));
+    background-size: 200% 100%;
+    animation: progressGradient 2s linear infinite;
+    border-radius: 2px;
+    transition: width 0.3s;
+}
+@keyframes progressGradient { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* --- Log level colors --- */
+.log-info { color: var(--red); }
+.log-warn { color: var(--amber); text-shadow: 0 0 4px rgba(255, 176, 0, 0.3); }
+.log-error { color: #ff0033; text-shadow: 0 0 6px rgba(255, 0, 51, 0.4); }
+.log-success { color: var(--red); text-shadow: 0 0 8px var(--red-glow); }
+.log-debug { color: var(--ink-dim); }
+.log-system { color: var(--cyan-ghost); text-shadow: 0 0 4px rgba(0, 229, 255, 0.3); }
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.site-footer {
+    max-width: 1100px;
+    margin: 30px auto 0;
+    padding: 16px 4px 24px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-size: 11px;
+    letter-spacing: 1px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.footer-divider { color: var(--red-dim); }
+.footer-label { color: var(--red); text-shadow: 0 0 6px var(--red-glow); margin-right: 6px; }
+.footer-value { color: var(--cyan-ghost); text-shadow: 0 0 6px rgba(0, 229, 255, 0.3); }
+
+/* --- Selection --- */
+::selection { background: rgba(255, 20, 53, 0.3); color: #fff; }
+::-moz-selection { background: rgba(255, 20, 53, 0.3); color: #fff; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .topbar { justify-content: center; text-align: center; }
+    .topbar-meta { justify-content: center; width: 100%; }
+    .meta-item { align-items: center; }
+    .control-deck { justify-content: center; }
+    .hologram-wordmark span[data-text] { font-size: 15px; letter-spacing: 3px; }
+    #console { height: 320px; }
+    .site-footer { flex-direction: column; gap: 6px; }
+    .footer-divider { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
